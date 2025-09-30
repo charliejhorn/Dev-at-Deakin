@@ -1,6 +1,6 @@
-# CogWorks Backend
+# Dev@Deakin Backend
 
-Express + Firestore Admin backend for CogWorks. Implements REST endpoints, JWT auth, and SSE updates for job status.
+Express + Firestore Admin backend for Dev@Deakin. Implements REST endpoints and JWT auth.
 
 ## Prerequisites
 
