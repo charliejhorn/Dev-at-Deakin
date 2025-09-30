@@ -2,13 +2,24 @@
 
 # dependencies
 /node_modules
-node_modules/
 node_modules
+**/node_modules
 /.pnp
-.pnp.js
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
 /coverage
+
+# next.js
+/.next/
+/out/
+.next
+**/.next
 
 # production
 /build
@@ -20,18 +31,11 @@ node_modules
 .env.test.local
 .env.production.local
 .env
+.env*
+
+# vercel
+.vercel
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# macOS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-.AppleDouble
-.LSOverride
