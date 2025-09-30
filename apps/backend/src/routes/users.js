@@ -17,12 +17,21 @@ if (!db) {
 // create a new user (registration)
 router.post("/", async (req, res) => {
     try {
-        const { email, password, name } = req.body || {};
+        // accept firstName and lastName (legacy `name` field removed)
+        const { email, password, firstName, lastName } = req.body || {};
         const role = req.body?.role || "user";
         if (!email || !password)
             return res
                 .status(400)
                 .json({ error: "email and password are required" });
+        const fn =
+            typeof firstName === "string" && firstName.trim().length
+                ? firstName.trim()
+                : null;
+        const ln =
+            typeof lastName === "string" && lastName.trim().length
+                ? lastName.trim()
+                : null;
 
         // check existing user
         const q = await db
@@ -37,7 +46,8 @@ router.post("/", async (req, res) => {
         const now = Date.now();
         const doc = {
             email,
-            name: name || null,
+            firstName: fn,
+            lastName: ln,
             role: role || "customer",
             passwordHash: hash,
             createdAt: now,
@@ -47,7 +57,8 @@ router.post("/", async (req, res) => {
         const out = {
             id: ref.id,
             email: doc.email,
-            name: doc.name,
+            firstName: doc.firstName,
+            lastName: doc.lastName,
             role: doc.role,
             createdAt: doc.createdAt,
         };
