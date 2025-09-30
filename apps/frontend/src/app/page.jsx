@@ -1,7 +1,56 @@
 "use client";
 
-import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
+import Gallery from "@/components/home/Gallery";
+import NewsletterSignUp from "@/components/home/NewsletterSignUp";
+import Footer from "@/components/Footer";
+
+const articles = [
+    {
+        title: "Article's Name",
+        image_url: "field.jpeg",
+        description: "Description...",
+        stars: 5,
+        author_name: "Author's name",
+    },
+    {
+        title: "Article's Name",
+        image_url: "field.jpeg",
+        description: "Description...",
+        stars: 5,
+        author_name: "Author's name",
+    },
+    {
+        title: "Article's Name",
+        image_url: "field.jpeg",
+        description: "Description...",
+        stars: 5,
+        author_name: "Author's name",
+    },
+];
+const tutorials = [
+    {
+        title: "Tutorial's Name",
+        image_url: "field.jpeg",
+        description: "Description...",
+        stars: 5,
+        author_name: "username",
+    },
+    {
+        title: "Tutorial's Name",
+        image_url: "field.jpeg",
+        description: "Description...",
+        stars: 5,
+        author_name: "username",
+    },
+    {
+        title: "Tutorial's Name",
+        image_url: "field.jpeg",
+        description: "Description...",
+        stars: 5,
+        author_name: "username",
+    },
+];
 
 export default function HomePage() {
     const recent = Array.from({ length: 5 }).map((_, i) => ({
@@ -12,13 +61,20 @@ export default function HomePage() {
     }));
 
     return (
-        <div className="container-fluid">
-            <div className="d-flex align-items-center justify-content-between mb-3">
-                <h2 className="h4">Dashboard</h2>
+        <div className="text-center">
+            <div className="container-fluid p-0">
+                <img src="cliffs.jpeg" className="img-fluid" alt="cliffs"></img>
             </div>
-            <Link className="btn btn-secondary" href="/jobs">
-                View Jobs
-            </Link>
+
+            <h1 className="py-4">Featured Articles</h1>
+            <Gallery items={articles}></Gallery>
+            <Link text="See all articles" href="#"></Link>
+
+            <h1 className="py-4">Featured Tutorials</h1>
+            <Gallery items={tutorials}></Gallery>
+            <Link text="See all tutorials" href="#"></Link>
+
+            <NewsletterSignUp />
         </div>
     );
 }

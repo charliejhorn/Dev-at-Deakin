@@ -1,6 +1,6 @@
-# CogWorks Frontend
+# Dev@Deakin Frontend
 
-Welcome to the CogWorks Workshop Management System frontend! This project is built using Next.js and React, providing a modern and efficient user interface for managing workshops.
+Welcome to the Dev@Deakin frontend! This project is built using Next.js and React, providing a modern and efficient user interface for connecting with staff and students at Deakin University.
 
 ## Getting Started
 
@@ -33,14 +33,14 @@ To get started with the CogWorks frontend, follow these steps:
 
 ## Features
 
-- User-friendly interface for managing workshops.
+- User-friendly interface.
 - Responsive design for accessibility on various devices.
 - Integration with the backend for data fetching and management.
 - UI styling powered by [Bootstrap](https://getbootstrap.com/).
 
 ## Bootstrap Integration
 
-Bootstrap is used for global UI styling. The CSS is loaded via a provider in `src/components/BootstrapProvider.jsx` and is available throughout the app.
+Bootstrap is used for global UI styling. The CSS framework is loaded via an import in `src/app/custom.scss`, which is integrated into the app via an import in `src/app/layout.jsx`. Bootstrap styling is available throughout the app.
 
 ## License
 

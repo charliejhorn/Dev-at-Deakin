@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require("path");
+
 const nextConfig = {
     reactStrictMode: true,
     env: {
@@ -11,6 +13,16 @@ const nextConfig = {
         return config;
     },
     outputFileTracingRoot: "/",
+    sassOptions: {
+        // add sass options here, eg:
+        // additionalData: '$var: red;'
+
+        // allow importing from these directories without long relative paths
+        includePaths: [
+            path.join(process.cwd(), "styles"),
+            path.join(process.cwd(), "node_modules"),
+        ],
+    },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

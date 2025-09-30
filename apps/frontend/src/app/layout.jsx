@@ -1,20 +1,21 @@
 import AuthProvider from "@/components/AuthProvider";
-import BootstrapProvider from "@/components/BootstrapProvider";
-import ConditionalSidebar from "@/components/ConditionalSidebar";
-import RequireAuth from "@/components/RequireAuth";
 import SwrProvider from "@/components/SwrProvider";
-import "./globals.css";
 import React from "react";
+import "./custom.scss";
+import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 
 const Layout = ({ children }) => {
     return (
-        <div className="d-flex" style={{ minHeight: "100vh" }}>
-            <ConditionalSidebar />
-            <div className="flex-grow-1">
-                <header className="border-bottom p-3">
-                    <h1 className="h4 m-0">CogWorks Workshop Management</h1>
+        <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
+            <div className="flex-grow-1 d-flex flex-column">
+                <header>
+                    <NavBar />
                 </header>
-                <main className="p-3">{children}</main>
+                <main className="flex-grow-1">{children}</main>
+                <footer>
+                    <Footer />
+                </footer>
             </div>
         </div>
     );
@@ -24,15 +25,11 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" data-scroll-behavior="smooth">
             <body>
-                <BootstrapProvider>
-                    <AuthProvider>
-                        <SwrProvider>
-                            <RequireAuth>
-                                <Layout>{children}</Layout>
-                            </RequireAuth>
-                        </SwrProvider>
-                    </AuthProvider>
-                </BootstrapProvider>
+                <AuthProvider>
+                    <SwrProvider>
+                        <Layout>{children}</Layout>
+                    </SwrProvider>
+                </AuthProvider>
             </body>
         </html>
     );

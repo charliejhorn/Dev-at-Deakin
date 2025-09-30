@@ -24,7 +24,8 @@ async function createUser(url, { arg: body }) {
 export default function SignUpPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -62,8 +63,12 @@ export default function SignUpPage() {
     const validateForm = () => {
         const newErrors = {};
 
-        if (!formData.name.trim()) {
-            newErrors.name = "Name is required";
+        if (!formData.firstName.trim()) {
+            newErrors.firstName = "First name is required";
+        }
+
+        if (!formData.lastName.trim()) {
+            newErrors.lastName = "Last name is required";
         }
 
         if (!formData.email.trim()) {
@@ -126,24 +131,45 @@ export default function SignUpPage() {
                         </button>
                     </div>
                     <form onSubmit={handleSubmit}>
-                        <div className="form-group mt-3">
-                            <label htmlFor="name">Name*</label>
-                            <input
-                                type="text"
-                                className={`form-control ${
-                                    errors.name ? "is-invalid" : ""
-                                }`}
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            {errors.name && (
-                                <div className="invalid-feedback">
-                                    {errors.name}
-                                </div>
-                            )}
+                        <div className="form-row d-flex gap-2">
+                            <div className="form-group mt-3 flex-fill">
+                                <label htmlFor="firstName">First name*</label>
+                                <input
+                                    type="text"
+                                    className={`form-control ${
+                                        errors.firstName ? "is-invalid" : ""
+                                    }`}
+                                    id="firstName"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                {errors.firstName && (
+                                    <div className="invalid-feedback">
+                                        {errors.firstName}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="form-group mt-3 flex-fill">
+                                <label htmlFor="lastName">Last name*</label>
+                                <input
+                                    type="text"
+                                    className={`form-control ${
+                                        errors.lastName ? "is-invalid" : ""
+                                    }`}
+                                    id="lastName"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                {errors.lastName && (
+                                    <div className="invalid-feedback">
+                                        {errors.lastName}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="form-group mt-3">
                             <label htmlFor="email">Email address*</label>
@@ -209,7 +235,8 @@ export default function SignUpPage() {
                             type="submit"
                             className="mt-3 btn btn-primary"
                             disabled={
-                                !formData.name ||
+                                !formData.firstName ||
+                                !formData.lastName ||
                                 !formData.email ||
                                 !formData.password ||
                                 !formData.confirmPassword ||

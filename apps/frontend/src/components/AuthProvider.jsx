@@ -123,54 +123,6 @@ export default function AuthProvider({ children }) {
         return refreshInflight.current;
     }, [tokens, setTokens, user]);
 
-    // const validate = useCallback(async () => {
-    //     if (!tokens?.accessToken) return null;
-
-    //     try {
-    //         const res = await fetch(
-    //             `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/validate`,
-    //             {
-    //                 method: "GET",
-    //                 headers: {
-    //                     Authorization: `Bearer ${tokens.accessToken}`,
-    //                 },
-    //             }
-    //         );
-
-    //         if (res.ok) {
-    //             const data = await res.json();
-    //             setUser(data.user || user);
-    //             return data.user || true; // return user or true if valid
-    //         }
-
-    //         // if access token is invalid, attempt refresh
-    //         const refreshed = await refresh();
-    //         if (!refreshed) return null;
-
-    //         // retry validation with new token
-    //         const retryRes = await fetch(
-    //             `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/validate`,
-    //             {
-    //                 method: "GET",
-    //                 headers: {
-    //                     Authorization: `Bearer ${refreshed.accessToken}`,
-    //                 },
-    //             }
-    //         );
-
-    //         if (retryRes.ok) {
-    //             const retryData = await retryRes.json();
-    //             setUser(retryData.user || user);
-    //             return retryData.user || true;
-    //         }
-
-    //         return null;
-    //     } catch (err) {
-    //         console.error("validation error", err);
-    //         return null;
-    //     }
-    // });
-
     const value = {
         tokens,
         user,
