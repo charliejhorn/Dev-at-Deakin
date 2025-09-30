@@ -15,50 +15,6 @@ if (!db) {
     return;
 }
 
-// register - create a new user in firestore with hashed password
-router.post("/register", async (req, res) => {
-    try {
-        if (!db)
-            return res.status(503).json({ error: "firestore not configured" });
-        const { email, password, name } = req.body || {};
-        // default role is 'user' for normal signup
-        const role = req.body?.role || "user";
-        if (!email || !password)
-            return res
-                .status(400)
-                .json({ error: "email and password are required" });
-        // check existing
-        const q = await db
-            .collection("users")
-            .where("email", "==", email)
-            .limit(1)
-            .get();
-        if (!q.empty)
-            return res.status(409).json({ error: "user already exists" });
-        const hash = await bcrypt.hash(password, 10);
-        const now = Date.now();
-        const doc = {
-            email,
-            name: name || null,
-            role: role || "customer",
-            passwordHash: hash,
-            createdAt: now,
-            updatedAt: now,
-        };
-        const ref = await db.collection("users").add(doc);
-        const out = {
-            id: ref.id,
-            email: doc.email,
-            name: doc.name,
-            role: doc.role,
-            createdAt: doc.createdAt,
-        };
-        return res.status(201).json(out);
-    } catch (e) {
-        return res.status(500).json({ error: "internal_error" });
-    }
-});
-
 router.post("/login", async (req, res) => {
     try {
         if (!db)
@@ -246,6 +202,26 @@ router.post("/refresh", (req, res) => {
         })();
     } catch (e) {
         return res.status(401).json({ error: "unauthorized" });
+    }
+});
+
+// enriched profile: fetch full user from firestore
+router.get("/auth/me", auth(true), async (req, res) => {
+    try {
+        if (!db)
+            return res.status(503).json({ error: "firestore not configured" });
+        const userId = req.user?.sub;
+        if (!userId)
+            return res.status(400).json({ error: "invalid token payload" });
+        const doc = await db.collection("users").doc(userId).get();
+        if (!doc.exists)
+            return res.status(404).json({ error: "user not found" });
+        const data = doc.data();
+        // sanitize: remove sensitive fields
+        delete data.passwordHash;
+        res.json({ id: doc.id, ...data });
+    } catch (e) {
+        res.status(500).json({ error: "internal_error" });
     }
 });
 

@@ -26,14 +26,15 @@ Server defaults to `PORT=4000`.
 
 ## Environment variables
 
-- PORT
-- CORS_ORIGIN
-- FIRESTORE_PROJECT_ID
-- FIREBASE_SERVICE_ACCOUNT (base64 of service account json) or GOOGLE_APPLICATION_CREDENTIALS
-- JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
-- ACCESS_TOKEN_TTL (seconds), REFRESH_TOKEN_TTL (seconds)
-- SSE_HEARTBEAT_MS (default 15000)
-- TIMETABLE_SLOT_MIN (default 60)
+- `PORT`
+- `CORS_ORIGIN`
+- `FIRESTORE_PROJECT_ID`
+- `FIREBASE_SERVICE_ACCOUNT` (base64 of service account json)
+- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+- `ACCESS_TOKEN_TTL` (seconds), `REFRESH_TOKEN_TTL` (seconds)
+- `STRIPE_SECRET_KEY`
+- `GMAIL_APP_PASSWORD`, and corresponding `GMAIL_USER`
+- `IMGBB_API_KEY`
  
 
 ## API Overview
@@ -44,26 +45,30 @@ Base path: `/api`
   - POST `/auth/login` { email, password }
   - POST `/auth/refresh`
   - POST `/auth/logout`
-- Customers: GET/POST/PATCH `/customers`, GET `/customers/:id`
-- Mechanics: GET/POST/PATCH `/mechanics`, GET `/mechanics/:id`
-- Inventory: GET/POST/PATCH `/inventory`, GET `/inventory/:id`
-- Jobs: GET/POST/PATCH `/jobs`, GET `/jobs/:id`, POST `/jobs/:id/status`
-- Timetable: GET `/timetable?date=YYYY-MM-DD`
-- SSE: GET `/events`
+  - GET `/auth/me`
+- Users
+  - POST `/users`
+- Posts
+  - GET / POST `/posts`
+- Subscriptions
+  - PATCH `/subscriptions`
+  - GET `/subscriptions`
+- Newsletter
+  - POST `/newsletter/subscribe` { email }
+- Checkout
+  - POST `/checkout`
+  - POST `/checkout/confirm`
 
 All write endpoints validate payloads and ignore unknown fields.
 
 ## Notes
 
-- Firestore is lazily initialized. If credentials are missing, resource routes will return 503.
-- SSE sends a heartbeat comment every `SSE_HEARTBEAT_MS`.
+- Firestore and Stripe are lazily initialized. If credentials are missing, resource routes will return 503.
 
 ## Folder Structure
 
 ```
 apps/backend
-├── .github
-│   └── copilot-instructions.md
 ├── src
 │   ├── index.js
 │   ├── lib
