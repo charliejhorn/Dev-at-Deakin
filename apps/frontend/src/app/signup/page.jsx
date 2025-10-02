@@ -36,7 +36,7 @@ export default function SignUpPage() {
     // trigger(payload) performs the mutation
     // isMutating is true while the request is unresolved
     const { trigger, isMutating, error } = useSWRMutation(
-        "http://localhost:4000/api/auth/register",
+        "http://localhost:4000/api/users",
         createUser
     );
 
