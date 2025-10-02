@@ -109,7 +109,7 @@ export default function SignUpPage() {
                     );
                 } else {
                     setMessage(
-                        `Error creating user. Response status: ${error.status}`
+                        `Error creating user. (${error.status}) ${error.info.message}`
                     );
                 }
             }

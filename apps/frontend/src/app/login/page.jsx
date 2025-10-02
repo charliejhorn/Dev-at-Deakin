@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { emailDoesntExist, passwordIncorrect } from "@/utils/errors";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 
