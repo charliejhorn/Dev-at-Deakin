@@ -6,6 +6,11 @@ const { getStripe } = require("../lib/stripe");
 
 // mount resource routers
 router.use("/auth", require("./auth"));
+router.use("/checkout", require("./checkout"));
+router.use("/newsletter", require("./newsletter"));
+router.use("/posts", require("./posts"));
+router.use("/subscriptions", require("./subscriptions"));
+router.use("/users", require("./users"));
 
 // health check
 router.get("/health", (req, res) => {

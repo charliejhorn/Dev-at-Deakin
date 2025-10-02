@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const { initFirebase } = require("../lib/firebase");
+const auth = require("../middleware/auth");
 
 const db = initFirebase();
 if (!db) {

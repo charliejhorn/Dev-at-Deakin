@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { initFirebase } = require("../lib/firebase");
+const { httpError } = require("../lib/errors");
 
 // initialize firestore (may return null if not configured)
 const db = initFirebase();
@@ -15,15 +16,13 @@ if (!db) {
 }
 
 // create a new user (registration)
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
     try {
-        // accept firstName and lastName (legacy `name` field removed)
+        // accept firstName and lastName
         const { email, password, firstName, lastName } = req.body || {};
         const role = req.body?.role || "user";
         if (!email || !password)
-            return res
-                .status(400)
-                .json({ error: "email and password are required" });
+            return next(httpError(400, "email and password are required"));
         const fn =
             typeof firstName === "string" && firstName.trim().length
                 ? firstName.trim()
@@ -39,8 +38,7 @@ router.post("/", async (req, res) => {
             .where("email", "==", email)
             .limit(1)
             .get();
-        if (!q.empty)
-            return res.status(409).json({ error: "user already exists" });
+        if (!q.empty) return next(httpError(409, "user already exists"));
 
         const hash = await bcrypt.hash(password, 10);
         const now = Date.now();
@@ -64,7 +62,8 @@ router.post("/", async (req, res) => {
         };
         return res.status(201).json(out);
     } catch (e) {
-        return res.status(500).json({ error: "internal_error" });
+        console.log("e:", e);
+        return next(httpError(500, "internal_error", e.message));
     }
 });
 
