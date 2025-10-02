@@ -3,6 +3,7 @@ const router = express.Router();
 const { httpError } = require("../lib/errors");
 const { requireFields, allowOnly } = require("../lib/validators");
 const { updateSubscription } = require("../lib/subscriptionsService");
+const auth = require("../middleware/auth");
 
 // list subscriptions (filter by email or status)
 router.get("/", auth(true), async (req, res, next) => {

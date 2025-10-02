@@ -3,6 +3,7 @@ const router = express.Router();
 const { initFirebase } = require("../lib/firebase");
 const { httpError } = require("../lib/errors");
 const { requireFields, allowOnly, isEnum } = require("../lib/validators");
+const auth = require("../middleware/auth");
 
 const db = initFirebase();
 if (!db) {
