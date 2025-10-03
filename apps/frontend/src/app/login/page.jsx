@@ -16,7 +16,7 @@ export default function LoginPage() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        console.log("LoginPage params:", email, password);
+        // console.log("LoginPage params:", email, password);
 
         startTransition(async () => {
             // await action(formData.email, formData.password);
