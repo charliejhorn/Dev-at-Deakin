@@ -45,8 +45,8 @@ Base path: `/api`
   - POST `/auth/login` { email, password }
   - POST `/auth/refresh`
   - POST `/auth/logout`
-  - GET `/auth/me`
 - Users
+  - GET `/me` (protected)
   - POST `/users`
 - Posts
   - GET / POST `/posts`

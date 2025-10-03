@@ -206,24 +206,4 @@ router.post("/refresh", (req, res) => {
     }
 });
 
-// enriched profile: fetch full user from firestore
-router.get("/auth/me", auth(true), async (req, res) => {
-    try {
-        if (!db)
-            return res.status(503).json({ error: "firestore not configured" });
-        const userId = req.user?.sub;
-        if (!userId)
-            return res.status(400).json({ error: "invalid token payload" });
-        const doc = await db.collection("users").doc(userId).get();
-        if (!doc.exists)
-            return res.status(404).json({ error: "user not found" });
-        const data = doc.data();
-        // sanitize: remove sensitive fields
-        delete data.passwordHash;
-        res.json({ id: doc.id, ...data });
-    } catch (e) {
-        res.status(500).json({ error: "internal_error" });
-    }
-});
-
 module.exports = router;

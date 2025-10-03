@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { initFirebase } = require("../lib/firebase");
 const { httpError } = require("../lib/errors");
+const auth = require("../middleware/auth");
 
 // initialize firestore (may return null if not configured)
 const db = initFirebase();
@@ -64,6 +65,26 @@ router.post("/", async (req, res, next) => {
     } catch (e) {
         console.log("e:", e);
         return next(httpError(500, "internal_error", e.message));
+    }
+});
+
+// enriched profile: fetch full user from firestore
+router.get("/me", auth(true), async (req, res) => {
+    try {
+        if (!db)
+            return res.status(503).json({ error: "firestore not configured" });
+        const userId = req.user?.sub;
+        if (!userId)
+            return res.status(400).json({ error: "invalid token payload" });
+        const doc = await db.collection("users").doc(userId).get();
+        if (!doc.exists)
+            return res.status(404).json({ error: "user not found" });
+        const data = doc.data();
+        // sanitize: remove sensitive fields
+        delete data.passwordHash;
+        res.json({ id: doc.id, ...data });
+    } catch (e) {
+        res.status(500).json({ error: "internal_error" });
     }
 });
 
