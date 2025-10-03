@@ -1,14 +1,9 @@
-"use client";
-
-import { useAuth } from "@/components/AuthProvider";
-import { useState } from "react";
-// import { cancelSubscription } from "../api/stripe";
+import Link from "next/link";
+import { getUser } from "../lib/dal/user";
+import ManageSubscription from "./ManageSubscription";
 
 export default function AccountPage() {
-    // const { user, logout, setUserData } = useAuth();
-    const { user, logout } = useAuth();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const user = getUser();
 
     const handleCancel = async () => {
         // if (!user?.email || !user?.subscriptionStatus) return;
@@ -41,56 +36,45 @@ export default function AccountPage() {
         <>
             <div className="container my-5">
                 <div className="card">
-                    <div className="card-header">
-                        {/* {user.firstName} {user.lastName} */}
-                        user.firstName user.lastName
-                    </div>
+                    <div className="card-header">Account</div>
                     <div className="card-body">
-                        {/* <div>Email: {user.email}</div> */}
-                        <div>Email: user.email</div>
-                        <div className="mt-3">
-                            Subscription status:{" "}
-                            {/* {user.subscriptionStatus
-                                ? "Subscribed"
-                                : "Not subscribed"} */}
-                            TBD
+                        <div>
+                            Name: {user.firstName} {user.lastName}
                         </div>
-                        {error && (
+                        <div>Email: {user.email}</div>
+                        {/* {error && (
                             <div className="alert alert-warning mt-3">
                                 {error}
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
 
+                {/* manage subscription */}
                 {/* {user.subscriptionStatus && (
-                    <div className="card mt-4">
-                        <div className="card-header">Manage subscription</div>
-                        <div className="card-body">
-                            <p className="text-secondary">
-                                Your Premium plan is active. You can cancel your
-                                subscription at any time.
-                            </p>
-                            <button
-                                className="btn btn-outline-danger"
-                                onClick={handleCancel}
-                                disabled={loading}
-                            >
-                                {loading
-                                    ? "Cancelling…"
-                                    : "Cancel subscription"}
-                            </button>
-                        </div>
+                <div className="card mt-4">
+                    <div className="card-header">Manage subscription</div>
+                    <div className="card-body">
+                        <p className="text-secondary">
+                            Your Premium plan is active. You can cancel your
+                            subscription at any time.
+                        </p>
+                        <button
+                            className="btn btn-outline-danger"
+                            onClick={handleCancel}
+                            disabled={loading}
+                        >
+                            {loading ? "Cancelling…" : "Cancel subscription"}
+                        </button>
                     </div>
+                </div>
                 )} */}
+                <ManageSubscription />
 
                 <div className="d-flex justify-content-start mt-4">
-                    <button
-                        className="btn btn-outline-secondary"
-                        onClick={logout}
-                    >
+                    <Link className="btn btn-outline-secondary" href="/logout">
                         Logout
-                    </button>
+                    </Link>
                 </div>
             </div>
         </>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWRMutation from "swr/mutation";
+import Link from "next/link";
 
 async function createUser(url, { arg: body }) {
     const res = await fetch(url, {
@@ -120,15 +121,14 @@ export default function SignUpPage() {
         <>
             <div className="text-center p-5">
                 <div className="container-fluid text-start w-75 border rounded p-4 shadow blur">
-                    <div className="d-flex justify-content-between">
+                    <div className="d-flex justify-content-between align-items-start">
                         <h2>Sign up for CogWorks</h2>
-                        <button
-                            type="button"
+                        <Link
                             className="btn btn-outline-secondary"
-                            onClick={navigateLogin}
+                            href="/login"
                         >
                             Login
-                        </button>
+                        </Link>
                     </div>
                     <form onSubmit={handleSubmit}>
                         <div className="form-row d-flex gap-2">

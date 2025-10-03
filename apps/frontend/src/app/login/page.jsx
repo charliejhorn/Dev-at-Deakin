@@ -1,19 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { useAuth } from "@/components/AuthProvider";
-import { useRouter } from "next/navigation";
+import { useTransition, useActionState, useState } from "react";
+import { loginAction } from "@/app/lib/actions/auth";
+import Link from "next/link";
 
 export default function LoginPage() {
-    const [message, setMessage] = useState(null);
-    const router = useRouter();
-    const { login, loading, user } = useAuth();
-
+    const [state, action] = useActionState(loginAction, undefined);
     const [formData, setFormData] = useState({
         email: "",
         password: "",
     });
-    const [errors, setErrors] = useState({});
+    const [pending, startTransition] = useTransition();
+    // const [errors, setErrors] = useState({});
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        console.log("LoginPage params:", email, password);
+
+        startTransition(async () => {
+            // await action(formData.email, formData.password);
+            //     await action(state, {
+            //     email: formData.email,
+            //     password: formData.password,
+            // });
+            await action({
+                email: formData.email,
+                password: formData.password,
+            });
+        });
+    }
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -23,91 +39,34 @@ export default function LoginPage() {
         }));
 
         // clear error when user starts typing
-        if (errors[name]) {
-            setErrors((prev) => ({
-                ...prev,
-                [name]: "",
-            }));
-        }
+        // if (errors[name]) {
+        //     setErrors((prev) => ({
+        //         ...prev,
+        //         [name]: "",
+        //     }));
+        // }
     };
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Email is invalid";
-        }
-
-        if (!formData.password) {
-            newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (validateForm()) {
-            try {
-                const { email, password } = formData;
-                const data = await login(email, password);
-                if (
-                    data?.accessToken &&
-                    data?.refreshToken &&
-                    data?.user?.email == email
-                ) {
-                    setMessage("Logged in successfully!");
-                    // router.push("/");
-                }
-            } catch (error) {
-                // const newErrors = {};
-                // switch (error) {
-                //     case emailDoesntExist:
-                //         newErrors.email = "Email doesn't exist";
-                //         break;
-
-                //     case passwordIncorrect:
-                //         newErrors.password = "Password is incorrect";
-                //         break;
-
-                //     default:
-                //         console.log(error);
-                // }
-                // setErrors(newErrors);
-                setMessage("Email or password is incorrect");
-            }
-        }
-    };
-
-    function navigateSignUp() {
-        router.push("/signup");
-    }
 
     return (
         <>
             <div className="text-center p-5">
                 <div className="container-fluid text-start w-75 border rounded p-4 shadow blur">
-                    <div className="d-flex justify-content-between">
-                        <h2>Login to CogWorks</h2>
-                        <button
-                            className="btn btn-outline-secondary"
-                            onClick={navigateSignUp}
+                    <div className="d-flex justify-content-between align-items-start">
+                        <h2>Login to Dev@Deakin</h2>
+                        <Link
+                            className="btn btn-outline-secondary h-auto"
+                            href="/signup"
                         >
                             Sign up
-                        </button>
+                        </Link>
                     </div>
                     <form onSubmit={handleSubmit}>
                         <div className="form-group mt-3">
                             <label htmlFor="email">Email address</label>
                             <input
                                 type="email"
-                                className={`form-control ${
-                                    errors.email ? "is-invalid" : ""
+                                className={`form-control${
+                                    state?.errors?.email ? " is-invalid" : ""
                                 }`}
                                 id="email"
                                 name="email"
@@ -115,9 +74,9 @@ export default function LoginPage() {
                                 onChange={handleInputChange}
                                 aria-describedby="emailHelp"
                             />
-                            {errors.email && (
+                            {state?.errors?.email && (
                                 <div className="invalid-feedback">
-                                    {errors.email}
+                                    {state?.errors?.email}
                                 </div>
                             )}
                         </div>
@@ -125,46 +84,47 @@ export default function LoginPage() {
                             <label htmlFor="password">Password</label>
                             <input
                                 type="password"
-                                className="form-control"
+                                className={`form-control${
+                                    state?.errors?.password ? " is-invalid" : ""
+                                }`}
                                 id="password"
                                 name="password"
                                 value={formData.password}
                                 onChange={handleInputChange}
                             />
+                            {state?.errors?.password && (
+                                <div className="invalid-feedback">
+                                    {state?.errors?.password}
+                                </div>
+                            )}
                         </div>
                         <button
                             type="submit"
                             className="mt-3 btn btn-primary"
                             disabled={
-                                !formData.email || !formData.password || loading
+                                !formData.email || !formData.password || pending
                             }
                         >
-                            {loading ? "Logging in..." : "Log in"}
+                            {pending ? "Logging in..." : "Log in"}
                         </button>
                     </form>
 
-                    {message && (
+                    {state?.message && (
                         <div
                             className={`mt-3 alert ${
-                                message.includes("successful")
+                                state?.message.includes("successful")
                                     ? "alert-success"
                                     : "alert-danger"
                             }`}
                         >
-                            {message}
+                            {state?.message}
                         </div>
                     )}
 
-                    {user && (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={(e) => {
-                                router.push("/");
-                            }}
-                        >
+                    {state?.message.includes("successful") && (
+                        <Link className="btn btn-primary" href="/">
                             Go to Home
-                        </button>
+                        </Link>
                     )}
                 </div>
             </div>

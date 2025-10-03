@@ -1,26 +1,26 @@
-"use client";
-
 import Link from "next/link";
-import { useAuth } from "./AuthProvider";
+import { getUser } from "@/app/lib/dal/user";
 
-export default function NavBar() {
-    const { user } = useAuth();
+export default async function NavBar() {
+    const user = await getUser();
+    // console.log("NavBar user:", user);
 
     return (
         <>
             <nav className="navbar navbar-expand-sm bg-secondary-subtle">
                 <div className="container-fluid">
-                    <div className="d-flex align-items-center gap-1">
+                    <Link
+                        href="/"
+                        className="d-flex align-items-center gap-1 text-decoration-none"
+                    >
                         <img
                             src="/egg.png"
                             className="img-fluid"
                             alt="egg logo"
                             style={{ height: "2em" }}
                         ></img>
-                        <a className="navbar-brand" href="/">
-                            Dev@Deakin
-                        </a>
-                    </div>
+                        <span className="navbar-brand">Dev@Deakin</span>
+                    </Link>
 
                     <div className="text-end">
                         <button
@@ -40,43 +40,43 @@ export default function NavBar() {
                         >
                             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li className="nav-item">
-                                    <a
+                                    <Link
                                         className="nav-link text-black"
                                         href="/plans"
                                     >
                                         Plans
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li className="nav-item">
-                                    <a
+                                    <Link
                                         className="nav-link text-black"
                                         href="/find-question"
                                     >
                                         Find a Question
-                                    </a>
+                                    </Link>
                                 </li>
 
                                 {
                                     // if user not logged in, display 'Login'
                                     user == null ? (
                                         <li className="nav-item">
-                                            <a
+                                            <Link
                                                 className="nav-link text-black"
                                                 href="/login"
                                             >
                                                 Login
-                                            </a>
+                                            </Link>
                                         </li>
                                     ) : (
                                         // if user logged in, display 'Create Post' and 'Logout'
                                         <>
                                             <li className="nav-item">
-                                                <a
+                                                <Link
                                                     className="nav-link text-black"
                                                     href="/create-post"
                                                 >
                                                     Create Post
-                                                </a>
+                                                </Link>
                                             </li>
                                             <li className="nav-item d-flex justify-content-end">
                                                 <Link

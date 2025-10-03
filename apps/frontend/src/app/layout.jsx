@@ -1,5 +1,3 @@
-import AuthProvider from "@/components/AuthProvider";
-import SwrProvider from "@/components/SwrProvider";
 import React from "react";
 import "./custom.scss";
 import NavBar from "@/components/NavBar";
@@ -25,11 +23,7 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" data-scroll-behavior="smooth">
             <body>
-                <AuthProvider>
-                    <SwrProvider>
-                        <Layout>{children}</Layout>
-                    </SwrProvider>
-                </AuthProvider>
+                <Layout>{children}</Layout>
             </body>
         </html>
     );

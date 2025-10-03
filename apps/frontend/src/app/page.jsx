@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Gallery from "@/components/home/Gallery";
 import NewsletterSignUp from "@/components/home/NewsletterSignUp";
-import Footer from "@/components/Footer";
 
 const articles = [
     {

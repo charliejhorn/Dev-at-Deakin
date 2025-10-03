@@ -1,10 +1,8 @@
-"use client";
-
-import { useAuth } from "@/components/AuthProvider";
 import Link from "next/link";
+import { getUser } from "../lib/dal/user";
 
 export default function Plans() {
-    const { user } = useAuth();
+    const user = getUser();
 
     return (
         <div className="container p-5 text-center">
