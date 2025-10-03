@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from "react";
-// import { subscribeEmail } from '../../api/mailingList'
+import { subscribeNewsletterAction } from "@/app/lib/actions/newsletter";
 
 export default function NewsletterSignUp() {
     const [email, setEmail] = useState("");
     const [subscribeStatus, setSubscribeStatus] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     const handleChange = (e) => {
         setEmail(e.target.value);
@@ -11,14 +14,18 @@ export default function NewsletterSignUp() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubscribeStatus("wait"); // reset subscribe status before submitting
+        setSubscribeStatus("wait");
+        setErrorMessage(null);
 
         try {
-            // await subscribeEmail(email)
+            await subscribeNewsletterAction({ email });
             setSubscribeStatus("success");
+            setEmail("");
         } catch (error) {
             setSubscribeStatus("error");
-            console.error(error);
+            const message =
+                error instanceof Error ? error.message : "subscription failed";
+            setErrorMessage(message);
         }
     };
 
@@ -38,7 +45,7 @@ export default function NewsletterSignUp() {
             case "success":
                 return "Subscription successful!";
             case "error":
-                return "Subsciption failed :(";
+                return errorMessage || "Subscription failed :(";
             case "wait":
                 return "Subscribing...";
         }
@@ -62,7 +69,11 @@ export default function NewsletterSignUp() {
                             value={email}
                             onChange={handleChange}
                         />
-                        <button className="btn btn-secondary" type="submit">
+                        <button
+                            className="btn btn-secondary"
+                            type="submit"
+                            disabled={subscribeStatus === "wait"}
+                        >
                             Subscribe
                         </button>
                     </form>
