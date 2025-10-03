@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { logoutDAL, validateSession } from "./app/lib/dal/auth";
+import { validateSession } from "./app/lib/dal/auth";
+import { logoutAction } from "./app/lib/actions/logout";
 import { getSubscription } from "./app/lib/dal/subscriptions";
 
 // these routes will require an authenticated cookie
@@ -26,7 +27,9 @@ export default async function middleware(req) {
                     cookieStore: req.cookies,
                 });
                 if (subscription?.status === "active") {
-                    return NextResponse.redirect(new URL("/account", req.nextUrl));
+                    return NextResponse.redirect(
+                        new URL("/account", req.nextUrl)
+                    );
                 }
             }
         } catch (e) {
@@ -38,8 +41,16 @@ export default async function middleware(req) {
 
     if (path === "/logout") {
         console.log("[middleware] logout requested");
-        await logoutDAL();
-        return NextResponse.redirect(new URL("/", req.nextUrl));
+        const response = NextResponse.redirect(new URL("/", req.nextUrl));
+
+        await logoutAction({
+            requestCookies: req.cookies,
+            responseCookies: response.cookies,
+        });
+
+        response.headers.set("Cache-Control", "no-store");
+
+        return response;
     }
 
     return NextResponse.next();
