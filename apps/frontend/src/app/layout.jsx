@@ -3,6 +3,8 @@ import "./custom.scss";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 
+export const dynamic = "force-dynamic";
+
 const Layout = ({ children }) => {
     return (
         <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
