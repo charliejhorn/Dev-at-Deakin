@@ -12,26 +12,39 @@ export const validateSession = cache(async () => {
     }
 
     // api/users/me checks access token and returns the user object if valid
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/users/me`,
-        {
+    const makeMeRequest = async () => {
+        return await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/users/me`, {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${accessToken.value}`,
             },
+        });
+    };
+    const initialResponse = await makeMeRequest();
+
+    // console.log("[validateSession] initialResponse:", initialResponse);
+
+    // if initial validation unsuccesful, attempt to refresh tokens
+    if (!initialResponse.ok) {
+        try {
+            refreshTokens();
+
+            const afterRefreshResponse = await makeMeRequest();
+            if (!afterRefreshResponse.ok) {
+                throw new Error(
+                    "Session validation failed after token refresh"
+                );
+            }
+            return await afterRefreshResponse.json();
+        } catch (e) {
+            const error = new Error("Failed to validate session");
+            error.status = response.status;
+            error.info = await response.json().catch(() => ({}));
+            throw error;
         }
-    );
-
-    if (!response.ok) {
-        // TODO: make refresh attempt
-
-        const error = new Error("Failed to validate session");
-        error.status = response.status;
-        error.info = await response.json().catch(() => ({}));
-        throw error;
     }
 
-    return await response.json();
+    return await initialResponse.json();
 });
 
 export async function loginDAL(email, password, opts = {}) {
