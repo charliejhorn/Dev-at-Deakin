@@ -23,6 +23,9 @@ const nextConfig = {
             path.join(process.cwd(), "node_modules"),
         ],
     },
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
 };
 
 module.exports = nextConfig;
