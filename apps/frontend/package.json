@@ -19,8 +19,8 @@
     "swr": "^2.2.5"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^15.0.0",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^15.5.4",
     "sass": "^1.93.2"
   },
   "keywords": [
