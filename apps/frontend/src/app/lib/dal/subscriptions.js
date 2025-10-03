@@ -15,10 +15,8 @@ export async function getSubscription(email, options = {}) {
     try {
         if (!email) return null;
         const params = new URLSearchParams({ email });
-        const {
-            baseUrl = process.env.NEXT_PUBLIC_API_BASE,
-            cookieStore,
-        } = options;
+        const { baseUrl = process.env.NEXT_PUBLIC_API_BASE, cookieStore } =
+            options;
 
         if (!baseUrl) {
             throw new Error("subscription api base url not configured");
@@ -40,7 +38,11 @@ export async function getSubscription(email, options = {}) {
             } catch (err) {
                 // ignore parse errors
             }
-            console.log("getSubscription error:", res.statusText, info?.error || info?.message);
+            console.log(
+                "getSubscription error:",
+                res.statusText,
+                info?.error || info?.message
+            );
             return null;
         }
         const data = await res.json();
@@ -49,4 +51,48 @@ export async function getSubscription(email, options = {}) {
         console.log("getSubscription error:", e);
         return null;
     }
+}
+
+export async function cancelSubscriptionDAL(options = {}) {
+    const {
+        subscriptionId,
+        baseUrl = process.env.NEXT_PUBLIC_API_BASE,
+        cookieStore,
+    } = options;
+
+    if (!subscriptionId) {
+        throw new Error("subscription id is required to cancel subscription");
+    }
+
+    if (!baseUrl) {
+        throw new Error("subscription api base url not configured");
+    }
+
+    const resolvedCookieStore = cookieStore || (await cookies());
+
+    const response = await fetch(
+        `${baseUrl}/api/subscriptions/${subscriptionId}`,
+        {
+            method: "PATCH",
+            headers: withAuthHeaders(
+                {
+                    "Content-Type": "application/json",
+                },
+                resolvedCookieStore
+            ),
+            body: JSON.stringify({ status: "inactive" }),
+        }
+    );
+
+    if (!response.ok) {
+        const info = await response.json().catch(() => ({}));
+        const error = new Error(
+            info?.error || info?.message || "failed to cancel subscription"
+        );
+        error.status = response.status;
+        error.info = info;
+        throw error;
+    }
+
+    return await response.json();
 }

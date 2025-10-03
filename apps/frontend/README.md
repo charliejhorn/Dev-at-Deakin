@@ -8,7 +8,7 @@ To get started with the CogWorks frontend, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:charliejhorn/Dev-at-Deakin.git
    cd CogWorks/apps/frontend
    ```
 
@@ -30,6 +30,10 @@ To get started with the CogWorks frontend, follow these steps:
 - **src/app**: Contains the main layout and entry point for the application.
 - **src/components**: Contains reusable React components.
 - **src/lib**: Contains utility functions for API calls and data management.
+
+## Environment Variables
+- `NEXT_PUBLIC_API_BASE` (backend URL root)
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 
 ## Features
 

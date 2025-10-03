@@ -5,8 +5,9 @@ import { getSubscription } from "../lib/dal/subscriptions";
 export default async function PlansPage() {
     const user = await getUser();
     const subscription = await getSubscription(user?.email);
+    const isActiveSubscription = subscription?.status === "active";
 
-    console.log("[PlansPage] subscription:", subscription);
+    // console.log("[PlansPage] subscription:", subscription);
 
     return (
         <div className="container p-5 text-center">
@@ -37,7 +38,7 @@ export default async function PlansPage() {
                             )}
 
                             {/* if user is free */}
-                            {user && !subscription && (
+                            {user && !isActiveSubscription && (
                                 <Link
                                     href="/signup"
                                     className="btn btn-lg btn-block btn-outline-primary disabled"
@@ -47,7 +48,7 @@ export default async function PlansPage() {
                             )}
 
                             {/* if user is premium */}
-                            {user && subscription && (
+                            {user && isActiveSubscription && (
                                 <Link
                                     href="/account"
                                     className="btn btn-lg btn-block btn-outline-primary"
@@ -86,7 +87,7 @@ export default async function PlansPage() {
                             )}
 
                             {/* if user is free */}
-                            {user && !subscription && (
+                            {user && !isActiveSubscription && (
                                 <Link
                                     href="/checkout"
                                     className="btn btn-lg btn-block btn-primary"
@@ -96,7 +97,7 @@ export default async function PlansPage() {
                             )}
 
                             {/* if user is premium */}
-                            {user && subscription && (
+                            {user && isActiveSubscription && (
                                 <Link
                                     href="/account"
                                     className="btn btn-lg btn-block btn-primary disabled"
