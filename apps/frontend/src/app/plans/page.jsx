@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { getUser } from "../lib/dal/user";
+import { getSubscription } from "../lib/dal/subscriptions";
 
-export default function Plans() {
-    const user = getUser();
+export default async function PlansPage() {
+    const user = await getUser();
+    const subscription = await getSubscription(user?.email);
+
+    console.log("[PlansPage] subscription:", subscription);
 
     return (
         <div className="container p-5 text-center">
@@ -33,7 +37,7 @@ export default function Plans() {
                             )}
 
                             {/* if user is free */}
-                            {user && !user.premiumStatus && (
+                            {user && !subscription && (
                                 <Link
                                     href="/signup"
                                     className="btn btn-lg btn-block btn-outline-primary disabled"
@@ -43,7 +47,7 @@ export default function Plans() {
                             )}
 
                             {/* if user is premium */}
-                            {user && user.premiumStatus && (
+                            {user && subscription && (
                                 <Link
                                     href="/account"
                                     className="btn btn-lg btn-block btn-outline-primary"
@@ -82,9 +86,9 @@ export default function Plans() {
                             )}
 
                             {/* if user is free */}
-                            {user && !user.premiumStatus && (
+                            {user && !subscription && (
                                 <Link
-                                    href="/signup"
+                                    href="/checkout"
                                     className="btn btn-lg btn-block btn-primary"
                                 >
                                     Upgrade
@@ -92,7 +96,7 @@ export default function Plans() {
                             )}
 
                             {/* if user is premium */}
-                            {user && user.premiumStatus && (
+                            {user && subscription && (
                                 <Link
                                     href="/account"
                                     className="btn btn-lg btn-block btn-primary disabled"

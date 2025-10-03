@@ -5,7 +5,7 @@ import { getSubscription } from "../lib/dal/subscriptions";
 
 export default async function AccountPage() {
     const user = await getUser();
-    const subscription = await getSubscription();
+    const subscription = await getSubscription(user?.email);
 
     return (
         <>

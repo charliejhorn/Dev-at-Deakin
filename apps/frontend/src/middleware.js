@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { logoutDAL, validateSession } from "./app/lib/dal/auth";
-import { redirect } from "next/dist/server/api-utils";
+import { getSubscription } from "./app/lib/dal/subscriptions";
 
 // these routes will require an authenticated cookie
-const protectedRoutes = ["/account"];
+const protectedRoutes = ["/account", "/checkout"];
 
 // routes Middleware should not run on
 export const config = {
@@ -21,7 +20,15 @@ export default async function middleware(req) {
     if (isProtectedRoute) {
         try {
             console.log("[middleware] attempting validateSession()");
-            validateSession();
+            const sessionUser = await validateSession();
+            if (path === "/checkout" && sessionUser?.email) {
+                const subscription = await getSubscription(sessionUser.email, {
+                    cookieStore: req.cookies,
+                });
+                if (subscription?.status === "active") {
+                    return NextResponse.redirect(new URL("/account", req.nextUrl));
+                }
+            }
         } catch (e) {
             // validate not successful
             console.log("[middleware] validation unsuccessful");
