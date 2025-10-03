@@ -73,7 +73,7 @@ export default async function NavBar() {
                                             <li className="nav-item">
                                                 <Link
                                                     className="nav-link text-black"
-                                                    href="/create-post"
+                                                    href="/posts/create"
                                                 >
                                                     Create Post
                                                 </Link>

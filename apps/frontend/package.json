@@ -12,10 +12,12 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^3.10.0",
     "@stripe/stripe-js": "^7.9.0",
+    "@uiw/react-codemirror": "^4.25.2",
     "bootstrap": "^5.3.0",
     "next": "15.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-markdown": "^10.1.0",
     "swr": "^2.2.5"
   },
   "devDependencies": {
