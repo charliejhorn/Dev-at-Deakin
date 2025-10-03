@@ -12,7 +12,7 @@ const nextConfig = {
         // customize webpack configuration here
         return config;
     },
-    outputFileTracingRoot: "/",
+    // outputFileTracingRoot: "/",
     sassOptions: {
         // add sass options here, eg:
         // additionalData: '$var: red;'
