@@ -54,26 +54,27 @@ router.post("/", auth(true), async (req, res, next) => {
             "imageBase64",
         ];
         const data = allowOnly(req.body || {}, allowed);
+
         const err = requireFields(data, ["postType", "title"]);
         if (err) return next(httpError(400, err));
         if (!isEnum(data.postType, POST_TYPES))
             return next(httpError(400, "invalid postType"));
 
-        const imageUpload =
-            data.imageUpload && typeof data.imageUpload === "object"
-                ? data.imageUpload
+        const imageBase64 =
+            data?.imageBase64 && typeof data.imageBase64 === "object"
+                ? data.imageBase64
                 : null;
-        if (imageUpload) delete data.imageUpload;
 
-        if (imageUpload?.data) {
+        if (imageBase64?.data) {
             try {
-                const upload = await uploadImageToImgbb(imageUpload);
+                const upload = await uploadImageToImgbb(imageBase64);
                 data.image = upload.url;
                 data.imageMeta = {
                     source: "imgbb",
                     displayUrl: upload.displayUrl,
                     deleteUrl: upload.deleteUrl,
                 };
+                delete data.imageBase64;
             } catch (error) {
                 return next(error);
             }

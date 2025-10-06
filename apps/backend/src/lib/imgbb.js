@@ -1,12 +1,12 @@
 const { httpError } = require("./errors");
 
-async function uploadImageToImgbb(imageUpload = {}) {
+async function uploadImageToImgbb(imageBase64 = {}) {
     const apiKey = process.env.IMGBB_API_KEY;
     if (!apiKey) {
         throw httpError(503, "image hosting not configured");
     }
 
-    const { data, name, type } = imageUpload;
+    const { data, name, type } = imageBase64;
     if (!data || typeof data !== "string") {
         throw httpError(400, "image data is required");
     }
