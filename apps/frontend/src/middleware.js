@@ -4,7 +4,7 @@ import { logoutAction } from "./app/lib/actions/logout";
 import { getSubscription } from "./app/lib/dal/subscriptions";
 
 // these routes will require an authenticated cookie
-const protectedRoutes = ["/account", "/checkout"];
+const protectedRoutes = ["/account", "/checkout", "/posts/create"];
 
 // routes Middleware should not run on
 export const config = {
