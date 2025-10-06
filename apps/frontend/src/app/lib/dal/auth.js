@@ -1,9 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { cache } from "react";
-
-export const validateSession = cache(async () => {
+export async function validateSession() {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken");
 
@@ -47,7 +45,7 @@ export const validateSession = cache(async () => {
     }
 
     return await initialResponse.json();
-});
+}
 
 export async function loginDAL(email, password, opts = {}) {
     const {

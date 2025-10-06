@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "../lib/dal/user";
 import ManageSubscription from "./ManageSubscription";
 import { getSubscription } from "../lib/dal/subscriptions";
+import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +33,7 @@ export default async function AccountPage() {
                 <ManageSubscription subscription={subscription} />
 
                 <div className="d-flex justify-content-start mt-4">
-                    <Link className="btn btn-outline-secondary" href="/logout">
-                        Logout
-                    </Link>
+                    <LogoutButton />
                 </div>
             </div>
         </>
