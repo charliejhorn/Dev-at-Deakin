@@ -12,7 +12,10 @@ const nextConfig = {
         // customize webpack configuration here
         return config;
     },
-    // outputFileTracingRoot: "/",
+    // only set outputFileTracingRoot in development to avoid affecting production builds
+    ...(process.env.NODE_ENV === "development"
+        ? { outputFileTracingRoot: "/" }
+        : {}),
     sassOptions: {
         // add sass options here, eg:
         // additionalData: '$var: red;'
