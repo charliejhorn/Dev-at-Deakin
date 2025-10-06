@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 function FooterLink(text, address) {
     return (
         <a
@@ -9,10 +11,17 @@ function FooterLink(text, address) {
     );
 }
 
-function SocialMediaLogo(source) {
+function SocialMediaLogo({ source, alt }) {
     return (
         <div className="px-1">
-            <img className="img-fluid footer-logo" src={source} />
+            {/* <Image className="img-fluid footer-logo" src={source} /> */}
+            <Image
+                className="img-fluid"
+                src={source}
+                width={30}
+                height={30}
+                alt={alt}
+            />
         </div>
     );
 }
@@ -38,9 +47,18 @@ export default function Footer() {
                     <div>
                         <h2>Stay connected</h2>
                         <div className="d-flex justify-content-center">
-                            {SocialMediaLogo("facebook.png")}
-                            {SocialMediaLogo("twitter.png")}
-                            {SocialMediaLogo("instagram.png")}
+                            <SocialMediaLogo
+                                source="/facebook.png"
+                                alt="Facebook logo"
+                            />
+                            <SocialMediaLogo
+                                source="/twitter.png"
+                                alt="Twitter logo"
+                            />
+                            <SocialMediaLogo
+                                source="/instagram.png"
+                                alt="Instagram logo"
+                            />
                         </div>
                     </div>
                 </div>
