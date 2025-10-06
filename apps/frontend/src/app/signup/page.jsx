@@ -1,29 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import useSWRMutation from "swr/mutation";
+import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
-
-async function createUser(url, { arg: body }) {
-    const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        credentials: "include",
-    });
-    if (!res.ok) {
-        const err = new Error("request failed");
-        err.status = res.status;
-        err.info = await res.json().catch(() => ({}));
-        throw err;
-    }
-    console.log("createUser res:", res);
-    return res.json();
-}
+import { signUpAction } from "@/app/lib/actions/auth";
 
 export default function SignUpPage() {
-    const router = useRouter();
+    const [state, action] = useActionState(signUpAction, undefined);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -31,15 +13,7 @@ export default function SignUpPage() {
         password: "",
         confirmPassword: "",
     });
-    const [errors, setErrors] = useState({});
-    const [message, setMessage] = useState(null);
-
-    // trigger(payload) performs the mutation
-    // isMutating is true while the request is unresolved
-    const { trigger, isMutating, error } = useSWRMutation(
-        "http://localhost:4000/api/users",
-        createUser
-    );
+    const [pending, startTransition] = useTransition();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -47,74 +21,20 @@ export default function SignUpPage() {
             ...prev,
             [name]: value,
         }));
-
-        // clear error when user starts typing
-        if (errors[name]) {
-            setErrors((prev) => ({
-                ...prev,
-                [name]: "",
-            }));
-        }
-    };
-
-    function navigateLogin() {
-        router.push("/login");
-    }
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.firstName.trim()) {
-            newErrors.firstName = "First name is required";
-        }
-
-        if (!formData.lastName.trim()) {
-            newErrors.lastName = "Last name is required";
-        }
-
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Email is invalid";
-        }
-
-        if (!formData.password) {
-            newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
-        }
-
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = "Please confirm your password";
-        } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = "Passwords do not match";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
     };
 
     async function handleSubmit(e) {
         e.preventDefault();
-        if (validateForm()) {
-            try {
-                // register the user by triggering the mutation
-                const data = await trigger(formData);
-                // set a simple user-facing message (string) instead of an object
-                setMessage("Sign up successful!");
-            } catch (error) {
-                console.log(error);
-                if (error.status === 409) {
-                    setMessage(
-                        `A user with email ${formData.email} already exists`
-                    );
-                } else {
-                    setMessage(
-                        `Error creating user. (${error.status}) ${error.info.message}`
-                    );
-                }
-            }
-        }
+
+        startTransition(async () => {
+            await action({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                password: formData.password,
+                confirmPassword: formData.confirmPassword,
+            });
+        });
     }
 
     return (
@@ -136,8 +56,10 @@ export default function SignUpPage() {
                                 <label htmlFor="firstName">First name*</label>
                                 <input
                                     type="text"
-                                    className={`form-control ${
-                                        errors.firstName ? "is-invalid" : ""
+                                    className={`form-control${
+                                        state?.errors?.firstName
+                                            ? " is-invalid"
+                                            : ""
                                     }`}
                                     id="firstName"
                                     name="firstName"
@@ -145,9 +67,9 @@ export default function SignUpPage() {
                                     onChange={handleInputChange}
                                     required
                                 />
-                                {errors.firstName && (
+                                {state?.errors?.firstName && (
                                     <div className="invalid-feedback">
-                                        {errors.firstName}
+                                        {state?.errors?.firstName}
                                     </div>
                                 )}
                             </div>
@@ -155,8 +77,10 @@ export default function SignUpPage() {
                                 <label htmlFor="lastName">Last name*</label>
                                 <input
                                     type="text"
-                                    className={`form-control ${
-                                        errors.lastName ? "is-invalid" : ""
+                                    className={`form-control${
+                                        state?.errors?.lastName
+                                            ? " is-invalid"
+                                            : ""
                                     }`}
                                     id="lastName"
                                     name="lastName"
@@ -164,9 +88,9 @@ export default function SignUpPage() {
                                     onChange={handleInputChange}
                                     required
                                 />
-                                {errors.lastName && (
+                                {state?.errors?.lastName && (
                                     <div className="invalid-feedback">
-                                        {errors.lastName}
+                                        {state?.errors?.lastName}
                                     </div>
                                 )}
                             </div>
@@ -175,8 +99,8 @@ export default function SignUpPage() {
                             <label htmlFor="email">Email address*</label>
                             <input
                                 type="email"
-                                className={`form-control ${
-                                    errors.email ? "is-invalid" : ""
+                                className={`form-control${
+                                    state?.errors?.email ? " is-invalid" : ""
                                 }`}
                                 id="email"
                                 name="email"
@@ -184,9 +108,9 @@ export default function SignUpPage() {
                                 onChange={handleInputChange}
                                 required
                             />
-                            {errors.email && (
+                            {state?.errors?.email && (
                                 <div className="invalid-feedback">
-                                    {errors.email}
+                                    {state?.errors?.email}
                                 </div>
                             )}
                         </div>
@@ -194,8 +118,8 @@ export default function SignUpPage() {
                             <label htmlFor="password">Password*</label>
                             <input
                                 type="password"
-                                className={`form-control ${
-                                    errors.password ? "is-invalid" : ""
+                                className={`form-control${
+                                    state?.errors?.password ? " is-invalid" : ""
                                 }`}
                                 id="password"
                                 name="password"
@@ -203,9 +127,9 @@ export default function SignUpPage() {
                                 onChange={handleInputChange}
                                 required
                             />
-                            {errors.password && (
+                            {state?.errors?.password && (
                                 <div className="invalid-feedback">
-                                    {errors.password}
+                                    {state?.errors?.password}
                                 </div>
                             )}
                         </div>
@@ -215,8 +139,10 @@ export default function SignUpPage() {
                             </label>
                             <input
                                 type="password"
-                                className={`form-control ${
-                                    errors.confirmPassword ? "is-invalid" : ""
+                                className={`form-control${
+                                    state?.errors?.confirmPassword
+                                        ? " is-invalid"
+                                        : ""
                                 }`}
                                 id="confirmPassword"
                                 name="confirmPassword"
@@ -224,9 +150,9 @@ export default function SignUpPage() {
                                 onChange={handleInputChange}
                                 required
                             />
-                            {errors.confirmPassword && (
+                            {state?.errors?.confirmPassword && (
                                 <div className="invalid-feedback">
-                                    {errors.confirmPassword}
+                                    {state?.errors?.confirmPassword}
                                 </div>
                             )}
                         </div>
@@ -235,27 +161,33 @@ export default function SignUpPage() {
                             type="submit"
                             className="mt-3 btn btn-primary"
                             disabled={
+                                pending ||
                                 !formData.firstName ||
                                 !formData.lastName ||
                                 !formData.email ||
                                 !formData.password ||
-                                !formData.confirmPassword ||
-                                isMutating
+                                !formData.confirmPassword
                             }
                         >
-                            {isMutating ? "Signing up…" : "Sign up"}
+                            {pending ? "Signing up..." : "Sign up"}
                         </button>
 
-                        {message && (
+                        {state?.message && (
                             <div
                                 className={`mt-3 alert ${
-                                    message.includes("successful")
+                                    state?.message?.includes("successful")
                                         ? "alert-success"
                                         : "alert-danger"
                                 }`}
                             >
-                                {message}
+                                {state?.message}
                             </div>
+                        )}
+
+                        {state?.message?.includes("successful") && (
+                            <Link className="btn btn-primary" href="/login">
+                                Go to Login
+                            </Link>
                         )}
                     </form>
                 </div>
