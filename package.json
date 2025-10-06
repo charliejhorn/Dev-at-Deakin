@@ -1,7 +1,7 @@
 {
-  "name": "CogWorks",
+  "name": "DevAtDeakin",
   "version": "1.0.0",
-  "description": "A Workshop Management System",
+  "description": "A community platform for Deakin",
   "main": "index.js",
   "scripts": {
     "start": "node apps/backend/src/index.js",

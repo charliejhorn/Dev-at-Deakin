@@ -29,10 +29,6 @@ export default function QuestionCard({ item, onHide }) {
         : [];
 
     return (
-        // <Draggable
-        //     nodeRef={nodeRef}
-        //     handle=".dragHandle"
-        // >
         <div ref={nodeRef} className="position-relative">
             <div className="card h-100 custom-card">
                 <div className="card-body">
@@ -48,14 +44,6 @@ export default function QuestionCard({ item, onHide }) {
                     </div>
                 </div>
             </div>
-            {/* <button
-                    className="dragHandle btn btn-sm btn-light text-secondary border-0 position-absolute top-0 start-0 m-2"
-                    style={{ boxShadow: 'none' }}
-                    onClick={e => { e.stopPropagation() }}
-                    title="Move"
-                >
-                    <img draggable="false" xmlns="http://www.w3.org/2000/svg" src="move.svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"/>
-                </button> */}
             <button
                 className="btn btn-sm btn-light text-secondary border-0 position-absolute top-0 end-0 m-2"
                 style={{ boxShadow: "none" }}
@@ -75,6 +63,5 @@ export default function QuestionCard({ item, onHide }) {
                 />
             </button>
         </div>
-        // </Draggable>
     );
 }

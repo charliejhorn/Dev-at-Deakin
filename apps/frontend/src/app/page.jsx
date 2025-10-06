@@ -3,6 +3,8 @@
 import Link from "next/link";
 import Gallery from "@/components/home/Gallery";
 import NewsletterSignUp from "@/components/home/NewsletterSignUp";
+import Image from "next/image";
+import cliffs from "../../public/cliffs.jpeg";
 
 const articles = [
     {
@@ -52,17 +54,19 @@ const tutorials = [
 ];
 
 export default function HomePage() {
-    const recent = Array.from({ length: 5 }).map((_, i) => ({
-        title: `Brake Repair - Trek 7.${i + 1}`,
-        customer: "John Smith",
-        status:
-            i % 3 === 0 ? "Queued" : i % 3 === 1 ? "In Progress" : "Completed",
-    }));
-
     return (
         <div className="text-center">
-            <div className="container-fluid p-0">
-                <img src="cliffs.jpeg" className="img-fluid" alt="cliffs"></img>
+            <div
+                className="container-fluid p-0"
+                style={{ position: "relative", height: "50vh" }}
+            >
+                <Image
+                    src={cliffs}
+                    className="img-fluid"
+                    alt="cliffs"
+                    fill
+                    style={{ objectFit: "cover" }}
+                />
             </div>
 
             <h1 className="py-4">Featured Articles</h1>

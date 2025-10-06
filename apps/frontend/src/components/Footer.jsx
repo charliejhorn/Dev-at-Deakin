@@ -3,7 +3,7 @@ import Image from "next/image";
 function FooterLink(text, address) {
     return (
         <a
-            className="link-dark link-underline link-underline-opacity-0"
+            className="link-light link-underline link-underline-opacity-0"
             href={address}
         >
             {text}
@@ -29,23 +29,27 @@ function SocialMediaLogo({ source, alt }) {
 export default function Footer() {
     return (
         <>
-            <footer className="container-fluid bg-primary p-4 footer mt-auto text-center">
-                <div className="d-flex justify-content-between pb-4">
-                    <div className="d-flex flex-column">
-                        <h2>Explore</h2>
-                        {FooterLink("Home", "#")}
-                        {FooterLink("Questions", "#")}
-                        {FooterLink("Articles", "#")}
-                        {FooterLink("Tutorials", "#")}
+            <footer className="container-fluid bg-primary p-4 footer mt-auto text-center text-white">
+                <div className="row pb-4">
+                    <div className="col-md-4 mb-3 mb-md-0">
+                        <h2 className="text-white">Explore</h2>
+                        <div className="d-flex flex-column align-items-center">
+                            {FooterLink("Home", "/")}
+                            {FooterLink("Questions", "/posts/questions")}
+                            {FooterLink("Articles", "#")}
+                            {FooterLink("Tutorials", "#")}
+                        </div>
                     </div>
-                    <div className="d-flex flex-column">
-                        <h2>Support</h2>
-                        {FooterLink("FAQs", "#")}
-                        {FooterLink("Help", "#")}
-                        {FooterLink("Contact Us", "#")}
+                    <div className="col-md-4 mb-3 mb-md-0">
+                        <h2 className="text-white">Support</h2>
+                        <div className="d-flex flex-column align-items-center">
+                            {FooterLink("FAQs", "#")}
+                            {FooterLink("Help", "#")}
+                            {FooterLink("Contact Us", "#")}
+                        </div>
                     </div>
-                    <div>
-                        <h2>Stay connected</h2>
+                    <div className="col-md-4">
+                        <h2 className="text-white">Stay connected</h2>
                         <div className="d-flex justify-content-center">
                             <SocialMediaLogo
                                 source="/facebook.png"
@@ -62,11 +66,19 @@ export default function Footer() {
                         </div>
                     </div>
                 </div>
-                <h2>DEV@Deakin 2025</h2>
-                <div className="container d-flex justify-content-around">
-                    {FooterLink("Privacy Policy", "#")}
-                    {FooterLink("Terms", "#")}
-                    {FooterLink("Code of Conduct", "#")}
+                <h2 className="text-white">DEV@Deakin 2025</h2>
+                <div className="container">
+                    <div className="row justify-content-around">
+                        <div className="col-auto">
+                            {FooterLink("Privacy Policy", "#")}
+                        </div>
+                        <div className="col-auto">
+                            {FooterLink("Terms", "#")}
+                        </div>
+                        <div className="col-auto">
+                            {FooterLink("Code of Conduct", "#")}
+                        </div>
+                    </div>
                 </div>
             </footer>
         </>

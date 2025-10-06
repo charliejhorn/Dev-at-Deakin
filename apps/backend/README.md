@@ -1,93 +1,142 @@
 # Dev@Deakin Backend
 
-Express + Firestore Admin backend for Dev@Deakin. Implements REST endpoints and JWT auth.
+Express REST API backend for Dev@Deakin with Firestore, JWT authentication, and Stripe subscriptions.
 
-## Prerequisites
+## Tech Stack
 
-- Node 18+
-- Firestore project credentials (service account JSON or ADC)
+- Express web framework
+- Firebase Admin SDK (Firestore)
+- JWT (jsonwebtoken) for authentication
+- Stripe for payment processing
+- bcrypt for password hashing
+- Nodemailer for email notifications
+- ImgBB API for image hosting
 
-## Setup
+## Getting Started
 
-1) Install deps
+1. Install dependencies: `npm install`
+2. Copy `.env.example` to `.env` and configure:
+   - `FIREBASE_SERVICE_ACCOUNT` (base64-encoded service account JSON)
+   - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+   - `STRIPE_SECRET_KEY`
+   - `IMGBB_API_KEY`
+   - `GMAIL_USER`, `GMAIL_APP_PASSWORD` (optional, for newsletter emails)
+3. Run development server: `npm run dev`
+4. Server starts on http://localhost:4000
+
+## Project Structure
+
 ```
-npm install
+src/
+├── index.js                     # Express app entry point
+├── lib/
+│   ├── errors.js                # Error helpers
+│   ├── firebase.js              # Firestore initialization
+│   ├── imgbb.js                 # Image upload service
+│   ├── stripe.js                # Stripe client
+│   ├── subscriptionsService.js  # Subscription logic
+│   └── validators.js            # Payload validation
+├── middleware/
+│   ├── auth.js                  # JWT verification
+│   └── errorHandler.js          # Error handling
+└── routes/
+    ├── index.js                 # Route registry
+    ├── auth.js                  # Login, refresh, logout
+    ├── checkout.js              # Stripe checkout
+    ├── newsletter.js            # Newsletter subscriptions
+    ├── posts.js                 # Posts CRUD
+    ├── subscriptions.js         # Subscription management
+    └── users.js                 # User registration
 ```
-
-2) Configure environment
-Copy `.env.example` to `.env` and set values.
-
-3) Run
-```
-npm run dev
-```
-
-Server defaults to `PORT=4000`.
-
-## Environment variables
-
-- `PORT`
-- `CORS_ORIGIN`
-- `FIRESTORE_PROJECT_ID`
-- `FIREBASE_SERVICE_ACCOUNT` (base64 of service account json)
-- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
-- `ACCESS_TOKEN_TTL` (seconds), `REFRESH_TOKEN_TTL` (seconds)
-- `STRIPE_SECRET_KEY`
-- `GMAIL_APP_PASSWORD`, and corresponding `GMAIL_USER`
-- `IMGBB_API_KEY`
- 
 
 ## API Overview
 
-Base path: `/api`
+Base URL: `http://localhost:4000/api`
 
-- Auth
-  - POST `/auth/login` { email, password }
-  - POST `/auth/refresh`
-  - POST `/auth/logout`
-- Users
-  - GET `/me` (protected)
-  - POST `/users`
-- Posts
-  - GET / POST `/posts`
-- Subscriptions
-  - PATCH `/subscriptions`
-  - GET `/subscriptions`
-- Newsletter
-  - POST `/newsletter/subscribe` { email }
-- Checkout
-  - POST `/checkout`
-  - POST `/checkout/confirm`
+### Authentication
+- `POST /auth/login` - User login with email/password
+- `POST /auth/refresh` - Refresh access token
+- `POST /auth/logout` - Logout and revoke tokens
 
-All write endpoints validate payloads and ignore unknown fields.
+### Users
+- `POST /users` - Register new user
+- `GET /users/me` - Get current user profile (protected)
 
-## Notes
+### Posts
+- `GET /posts` - List posts with optional filters
+- `POST /posts` - Create new post (protected)
 
-- Firestore and Stripe are lazily initialized. If credentials are missing, resource routes will return 503.
+### Subscriptions
+- `GET /subscriptions` - List subscriptions (protected)
+- `PATCH /subscriptions/:id` - Update subscription status (protected)
 
-## Folder Structure
+### Checkout
+- `POST /checkout` - Create Stripe checkout session
+- `POST /checkout/confirm` - Confirm checkout and create subscription
 
-```
-apps/backend
-├── src
-│   ├── index.js
-│   ├── lib
-│   │   ├── firebase.js
-│   │   ├── sse.js
-│   │   ├── validators.js
-│   │   └── errors.js
-│   ├── routes
-│   │   ├── index.js
-│   │   ├── customers.js
-│   │   ├── mechanics.js
-│   │   ├── inventory.js
-│   │   ├── jobs.js
-│   │   └── timetable.js
-│   ├── controllers
-│   │   └── index.js
-│   └── middleware
-│       ├── auth.js
-│       └── errorHandler.js
-├── package.json
-└── README.md
-```
+### Newsletter
+- `POST /newsletter/subscribe` - Subscribe to newsletter
+
+## Authentication Flow
+
+### Token Lifecycle
+1. **Login** issues access token (15min TTL) and refresh token (30d TTL)
+2. **API Requests** use access token in Authorization header
+3. **Token Refresh** validates refresh token and issues new tokens
+4. **Token Reuse Detection** revokes all tokens if replaced token is reused
+
+### Middleware Usage
+Protect routes with `auth(requireAuth)` middleware. Set `requireAuth` to `true` for protected routes or `false` to optionally populate `req.user`.
+
+## Firestore Collections
+
+### users
+`email`, `passwordHash`, `firstName`, `lastName`, `role`, `createdAt`, `updatedAt`
+
+### posts
+`postType`, `title`, `tags[]`, `createdBy{}`, `status`, question/article fields, `image`, `imageMeta`, `createdAt`
+
+### subscriptions
+`email`, `stripeSubscriptionId`, `status`, `currentPeriodEnd`, `checkoutSessionId`, `createdAt`
+
+### refresh_tokens
+`jti` (document ID), `userId`, `createdAt`, `expiresAt`, `revoked`, `replacedBy`
+
+### newsletter
+`email`, `createdAt`
+
+## Error Handling
+
+Backend uses `httpError(status, message, details)` helper to create standardized errors. Centralized error handler middleware catches all errors and returns JSON responses.
+
+## Image Upload Flow
+
+1. Client converts File to base64
+2. Frontend sends to server action
+3. Backend receives `imageBase64: { data, name, type }`
+4. ImgBB service uploads via API
+5. Backend stores URL in post document
+
+## Subscription Flow
+
+### Checkout
+1. Create checkout session with `POST /checkout`
+2. User completes payment on Stripe
+3. Confirm session with `POST /checkout/confirm`
+4. Subscription created/updated in Firestore
+
+### Management
+Update subscription status with `PATCH /subscriptions/:id`. Backend can integrate with Stripe cancellation if needed.
+
+## Newsletter
+
+Newsletter subscription stores email in Firestore and sends confirmation email via Nodemailer if Gmail credentials are configured in environment variables.
+
+## Available Scripts
+
+- `npm run dev` - Start development server with nodemon
+- `npm start` - Start production server
+
+## License
+
+MIT License - see LICENSE file for details.
