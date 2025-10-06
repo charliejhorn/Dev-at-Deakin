@@ -51,3 +51,34 @@ export async function createPostDAL(options = {}) {
 
     return await response.json();
 }
+
+export async function fetchQuestionsDAL(options = {}) {
+    const { baseUrl = process.env.NEXT_PUBLIC_API_BASE, cookieStore } = options;
+
+    if (!baseUrl) {
+        throw new Error("posts api base url not configured");
+    }
+
+    const resolvedCookieStore = cookieStore || (await cookies());
+
+    const url = new URL("/api/posts", baseUrl);
+    url.searchParams.set("postType", "question");
+
+    const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: withAuthHeaders({}, resolvedCookieStore),
+        cache: "no-store",
+    });
+
+    if (!response.ok) {
+        const info = await response.json().catch(() => ({}));
+        const error = new Error(
+            info?.error || info?.message || "failed to fetch questions"
+        );
+        error.status = response.status;
+        error.info = info;
+        throw error;
+    }
+
+    return await response.json();
+}

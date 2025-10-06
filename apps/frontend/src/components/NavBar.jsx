@@ -50,7 +50,7 @@ export default async function NavBar() {
                                 <li className="nav-item">
                                     <Link
                                         className="nav-link text-black"
-                                        href="/find-question"
+                                        href="/posts/questions"
                                     >
                                         Find a Question
                                     </Link>

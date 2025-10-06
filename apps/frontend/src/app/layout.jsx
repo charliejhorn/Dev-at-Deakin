@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Dev@Deakin" };
+
 const Layout = ({ children }) => {
     return (
         <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
