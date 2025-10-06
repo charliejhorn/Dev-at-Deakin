@@ -4,7 +4,6 @@ import { createPostDAL } from "@/app/lib/dal/posts";
 import { getUser } from "@/app/lib/dal/user";
 
 const POST_TYPES = ["question", "article"];
-const DEFAULT_STATUS = "draft";
 
 function normalizeTags(tagsInput) {
     if (!tagsInput || typeof tagsInput !== "string") return [];
@@ -16,6 +15,18 @@ function normalizeTags(tagsInput) {
 }
 
 export async function createPostAction(prevState, payload = {}) {
+    // wait for 0.5 seconds then simulate failure
+    // await new Promise((resolve) => setTimeout(resolve, 500));
+    // const message = "testing fail state";
+    // return {
+    //     success: false,
+    //     errors: {
+    //         general: message,
+    //     },
+    //     message,
+    //     data: null,
+    // };
+
     const errors = {};
 
     const postType =
@@ -24,11 +35,30 @@ export async function createPostAction(prevState, payload = {}) {
             : "";
     const title = typeof payload.title === "string" ? payload.title.trim() : "";
     const tags = normalizeTags(payload.tags);
-    const image = typeof payload.image === "string" ? payload.image.trim() : "";
-    const status =
-        typeof payload.status === "string"
-            ? payload.status.trim().toLowerCase()
-            : DEFAULT_STATUS;
+
+    let imageBase64 = null;
+    if (payload?.imageBase64 && typeof payload.imageBase64 === "object") {
+        const data =
+            typeof payload.imageBase64.data === "string"
+                ? payload.imageBase64.data.trim()
+                : "";
+        const name =
+            typeof payload.imageBase64.name === "string"
+                ? payload.imageBase64.name.trim()
+                : "";
+        const type =
+            typeof payload.imageBase64.type === "string"
+                ? payload.imageBase64.type.trim()
+                : "";
+
+        if (data) {
+            imageBase64 = {
+                data,
+                name: name || undefined,
+                type: type || undefined,
+            };
+        }
+    }
 
     if (!POST_TYPES.includes(postType)) {
         errors.postType = "Select a post type";
@@ -36,6 +66,8 @@ export async function createPostAction(prevState, payload = {}) {
 
     if (!title) {
         errors.title = "Title is required";
+    } else if (title.length < 10) {
+        errors.title = "Title must be at least 10 characters.";
     }
 
     let content = {};
@@ -55,6 +87,9 @@ export async function createPostAction(prevState, payload = {}) {
         if (!questionDescription) {
             errors.questionDescription =
                 "Description is required for questions";
+        } else if (questionDescription.length < 10) {
+            errors.questionDescription =
+                "Question Description must be at least 10 characters";
         }
 
         content = {
@@ -74,10 +109,15 @@ export async function createPostAction(prevState, payload = {}) {
 
         if (!articleAbstract) {
             errors.articleAbstract = "Abstract is required for articles";
+        } else if (articleAbstract.length < 10) {
+            errors.articleAbstract =
+                "Article Abstract must be at least 10 characters";
         }
 
         if (!articleText) {
             errors.articleText = "Article text is required";
+        } else if (articleText.length < 50) {
+            errors.articleText = "Article Text must be at least 50 characters";
         }
 
         content = {
@@ -119,12 +159,11 @@ export async function createPostAction(prevState, payload = {}) {
         title,
         tags,
         createdBy,
-        status,
         ...content,
     };
 
-    if (image) {
-        postPayload.image = image;
+    if (imageBase64) {
+        postPayload.imageBase64 = imageBase64;
     }
 
     try {

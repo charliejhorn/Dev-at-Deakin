@@ -1,15 +1,24 @@
 "use client";
 
-import { useActionState, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { createPostAction } from "@/app/lib/actions/posts";
+import { fileToBase64 } from "@/app/lib/client/fileToBase64";
+import PostType from "./PostType";
+import PostForm from "./PostForm";
+
+function Heading({ children }) {
+    return (
+        <div className="container-fluid bg-secondary-subtle p-2">
+            <h2 className="text-start m-0">{children}</h2>
+        </div>
+    );
+}
 
 const INITIAL_FORM = {
     postType: "question",
     title: "",
     tags: "",
-    image: "",
-    status: "draft",
+    image: null,
     questionDescription: "",
     questionDescriptionUseMarkdown: false,
     questionCodeSnippet: "",
@@ -27,367 +36,174 @@ const INITIAL_STATE = {
 export default function CreatePostForm({ user }) {
     const [formData, setFormData] = useState(INITIAL_FORM);
     const [state, action] = useActionState(createPostAction, INITIAL_STATE);
-    const [isPending, startTransition] = useTransition();
+    const [pending, startTransition] = useTransition();
+    const [clientErrors, setClientErrors] = useState({});
 
-    const postType = formData.postType;
+    // determine if required fields are filled and errors are cleared
+    const requiredFieldsFilled = (() => {
+        if (formData.postType === "question") {
+            return (
+                formData.title.trim() !== "" &&
+                formData.questionDescription.trim() !== ""
+            );
+        } else if (formData.postType === "article") {
+            return (
+                formData.title.trim() !== "" &&
+                formData.articleAbstract.trim() !== "" &&
+                formData.articleText.trim() !== ""
+            );
+        }
+        return false;
+    })();
 
-    const disabled = useMemo(() => isPending, [isPending]);
+    // const serverErrors = state?.errors || {};
+    // const mergedErrors = { ...serverErrors, ...clientErrors };
 
-    const handleChange = (event) => {
-        const { name, value, type, checked } = event.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
-    };
+    // whenever state.errors changes, 'copy' them to clientErrors so they can be edited
+    useEffect(() => {
+        if (state?.errors && Object.keys(state.errors).length > 0) {
+            setClientErrors(state.errors);
+        }
+    }, [state.errors]);
 
-    const handlePostTypeChange = (event) => {
-        const value = event.target.value;
-        setFormData((prev) => ({
-            ...prev,
-            postType: value,
-            questionDescription:
-                value === "question" ? prev.questionDescription : "",
-            questionDescriptionUseMarkdown:
-                value === "question"
-                    ? prev.questionDescriptionUseMarkdown
-                    : false,
-            questionCodeSnippet:
-                value === "question" ? prev.questionCodeSnippet : "",
-            articleAbstract: value === "article" ? prev.articleAbstract : "",
-            articleText: value === "article" ? prev.articleText : "",
-        }));
-    };
+    const hasActiveErrors = (() => {
+        if (formData.postType === "question") {
+            return !!clientErrors.title || !!clientErrors.questionDescription;
+        }
+        if (formData.postType === "article") {
+            return (
+                !!clientErrors.title ||
+                !!clientErrors.articleAbstract ||
+                !!clientErrors.articleText ||
+                !!clientErrors.image
+            );
+        }
+        return false;
+    })();
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        startTransition(async () => {
-            const result = await action({
-                ...formData,
+    const isPostDisabled =
+        pending || !requiredFieldsFilled || hasActiveErrors || state?.success;
+
+    const handleInputChange = (e) => {
+        const { name, value, type, files } = e.target;
+        if (type === "file") {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: files[0],
+            }));
+        } else if (name === "questionDescriptionUseMarkdown") {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: !prev[name],
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
+
+        // reset errors when client starts typing
+        if (clientErrors[name]) {
+            console.log("resetting error");
+            setClientErrors((prev) => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
             });
-            if (result?.success) {
-                setFormData(INITIAL_FORM);
+        }
+    };
+
+    // need this specifically because handleInputChange doesn't work
+    // because CodeMirror returns the content of the input field as the event
+    const handleCodeSnippetChange = (code) => {
+        setFormData((prev) => ({
+            ...prev,
+            questionCodeSnippet: code,
+        }));
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const { image, ...payload } = formData;
+
+        if (image instanceof File) {
+            let base64;
+            try {
+                base64 = await fileToBase64(image);
+            } catch (error) {
+                console.error("failed to encode image", error);
+                setClientErrors((prev) => ({
+                    ...prev,
+                    image: "We couldn't read that image. Please try another file.",
+                }));
+                return;
             }
+
+            if (!base64) {
+                setClientErrors((prev) => ({
+                    ...prev,
+                    image: "We couldn't read that image. Please try another file.",
+                }));
+                return;
+            }
+
+            payload.imageBase64 = {
+                data: base64,
+                name: image.name || undefined,
+                type: image.type || undefined,
+            };
+        }
+
+        startTransition(() => {
+            action(payload);
         });
     };
 
-    const renderFieldError = (field) => {
-        if (!state?.errors?.[field]) return null;
-        return (
-            <div className="invalid-feedback d-block">
-                {state.errors[field]}
-            </div>
-        );
-    };
-
-    const generalError = state?.errors?.general;
-
-    const successMessage = state?.success
-        ? state?.message || "Post created successfully"
-        : null;
-
     return (
-        <div className="container py-5">
-            <div className="row justify-content-center">
-                <div className="col-lg-8">
-                    <div className="card shadow-sm">
-                        <div className="card-header">
-                            <h2 className="mb-0">Create a new post</h2>
-                        </div>
-                        <div className="card-body">
-                            {user && (
-                                <p className="text-secondary">
-                                    Posting as {user.firstName || user.email}
-                                </p>
-                            )}
+        <div className="container-fluid p-5">
+            <p className="text-secondary">
+                Posting as {user?.firstName} {user?.lastName}
+            </p>
+            <Heading>New Post</Heading>
+            <PostType
+                formData={formData}
+                handleInputChange={handleInputChange}
+                errors={clientErrors}
+            />
 
-                            {generalError && (
-                                <div
-                                    className="alert alert-danger"
-                                    role="alert"
-                                >
-                                    {generalError}
-                                </div>
-                            )}
+            <Heading>
+                What do you want to{" "}
+                {formData.postType == "question" ? "ask" : "share"}
+            </Heading>
+            <PostForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleCodeSnippetChange={handleCodeSnippetChange}
+                handleSubmit={handleSubmit}
+                errors={clientErrors}
+                pending={pending}
+                isPostDisabled={isPostDisabled}
+            />
 
-                            {successMessage && (
-                                <div
-                                    className="alert alert-success"
-                                    role="alert"
-                                >
-                                    {successMessage}
-                                    {state?.data?.id && (
-                                        <div className="mt-3">
-                                            <Link
-                                                href="/posts/questions"
-                                                className="btn btn-sm btn-outline-success"
-                                            >
-                                                View posts
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="postType"
-                                    >
-                                        Post type
-                                    </label>
-                                    <select
-                                        id="postType"
-                                        name="postType"
-                                        className="form-select"
-                                        value={formData.postType}
-                                        onChange={handlePostTypeChange}
-                                        disabled={disabled}
-                                    >
-                                        <option value="question">
-                                            Question
-                                        </option>
-                                        <option value="article">Article</option>
-                                    </select>
-                                    {renderFieldError("postType")}
-                                </div>
-
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="title"
-                                    >
-                                        Title
-                                    </label>
-                                    <input
-                                        id="title"
-                                        name="title"
-                                        type="text"
-                                        className={`form-control${
-                                            state?.errors?.title
-                                                ? " is-invalid"
-                                                : ""
-                                        }`}
-                                        value={formData.title}
-                                        onChange={handleChange}
-                                        disabled={disabled}
-                                        placeholder="Enter a descriptive title"
-                                    />
-                                    {renderFieldError("title")}
-                                </div>
-
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="tags"
-                                    >
-                                        Tags
-                                    </label>
-                                    <input
-                                        id="tags"
-                                        name="tags"
-                                        type="text"
-                                        className="form-control"
-                                        value={formData.tags}
-                                        onChange={handleChange}
-                                        disabled={disabled}
-                                        placeholder="Comma separated tags"
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="image"
-                                    >
-                                        Image URL
-                                    </label>
-                                    <input
-                                        id="image"
-                                        name="image"
-                                        type="url"
-                                        className="form-control"
-                                        value={formData.image}
-                                        onChange={handleChange}
-                                        disabled={disabled}
-                                        placeholder="Optional image URL"
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="status"
-                                    >
-                                        Status
-                                    </label>
-                                    <select
-                                        id="status"
-                                        name="status"
-                                        className="form-select"
-                                        value={formData.status}
-                                        onChange={handleChange}
-                                        disabled={disabled}
-                                    >
-                                        <option value="draft">Draft</option>
-                                        <option value="published">
-                                            Published
-                                        </option>
-                                    </select>
-                                </div>
-
-                                {postType === "question" && (
-                                    <>
-                                        <div className="mb-3">
-                                            <label
-                                                className="form-label"
-                                                htmlFor="questionDescription"
-                                            >
-                                                Question description
-                                            </label>
-                                            <textarea
-                                                id="questionDescription"
-                                                name="questionDescription"
-                                                className={`form-control${
-                                                    state?.errors
-                                                        ?.questionDescription
-                                                        ? " is-invalid"
-                                                        : ""
-                                                }`}
-                                                value={
-                                                    formData.questionDescription
-                                                }
-                                                onChange={handleChange}
-                                                disabled={disabled}
-                                                rows={5}
-                                                placeholder="Describe your question"
-                                            />
-                                            {renderFieldError(
-                                                "questionDescription"
-                                            )}
-                                        </div>
-
-                                        <div className="form-check mb-3">
-                                            <input
-                                                id="questionDescriptionUseMarkdown"
-                                                name="questionDescriptionUseMarkdown"
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                checked={
-                                                    formData.questionDescriptionUseMarkdown
-                                                }
-                                                onChange={handleChange}
-                                                disabled={disabled}
-                                            />
-                                            <label
-                                                className="form-check-label"
-                                                htmlFor="questionDescriptionUseMarkdown"
-                                            >
-                                                Use markdown for description
-                                            </label>
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <label
-                                                className="form-label"
-                                                htmlFor="questionCodeSnippet"
-                                            >
-                                                Code snippet
-                                            </label>
-                                            <textarea
-                                                id="questionCodeSnippet"
-                                                name="questionCodeSnippet"
-                                                className="form-control"
-                                                value={
-                                                    formData.questionCodeSnippet
-                                                }
-                                                onChange={handleChange}
-                                                disabled={disabled}
-                                                rows={4}
-                                                placeholder="Optional code snippet"
-                                            />
-                                        </div>
-                                    </>
-                                )}
-
-                                {postType === "article" && (
-                                    <>
-                                        <div className="mb-3">
-                                            <label
-                                                className="form-label"
-                                                htmlFor="articleAbstract"
-                                            >
-                                                Article abstract
-                                            </label>
-                                            <textarea
-                                                id="articleAbstract"
-                                                name="articleAbstract"
-                                                className={`form-control${
-                                                    state?.errors
-                                                        ?.articleAbstract
-                                                        ? " is-invalid"
-                                                        : ""
-                                                }`}
-                                                value={formData.articleAbstract}
-                                                onChange={handleChange}
-                                                disabled={disabled}
-                                                rows={4}
-                                                placeholder="Summarize your article"
-                                            />
-                                            {renderFieldError(
-                                                "articleAbstract"
-                                            )}
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <label
-                                                className="form-label"
-                                                htmlFor="articleText"
-                                            >
-                                                Article text
-                                            </label>
-                                            <textarea
-                                                id="articleText"
-                                                name="articleText"
-                                                className={`form-control${
-                                                    state?.errors?.articleText
-                                                        ? " is-invalid"
-                                                        : ""
-                                                }`}
-                                                value={formData.articleText}
-                                                onChange={handleChange}
-                                                disabled={disabled}
-                                                rows={8}
-                                                placeholder="Write your article"
-                                            />
-                                            {renderFieldError("articleText")}
-                                        </div>
-                                    </>
-                                )}
-
-                                <div className="d-flex gap-3">
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                        disabled={disabled}
-                                    >
-                                        {isPending
-                                            ? "Creating..."
-                                            : "Create post"}
-                                    </button>
-                                    <Link
-                                        href="/"
-                                        className="btn btn-outline-secondary"
-                                    >
-                                        Cancel
-                                    </Link>
-                                </div>
-                            </form>
-                        </div>
+            {/* success message */}
+            {state?.success && (
+                <div className="mt-4 container-fluid text-center">
+                    <div className="p-2 d-inline-block rounded bg-success-subtle">
+                        {state.message}
                     </div>
                 </div>
-            </div>
+            )}
+
+            {/* error message */}
+            {clientErrors?.general && (
+                <div className="mt-4 container-fluid text-center">
+                    <div className="p-2 d-inline-block rounded bg-danger-subtle">
+                        {clientErrors.general}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
