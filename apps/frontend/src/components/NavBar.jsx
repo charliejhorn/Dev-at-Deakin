@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getUser } from "@/app/lib/dal/user";
 
 export default async function NavBar() {
-    const user = await getUser();
+    let user = await getUser();
+
     // console.log("NavBar user:", user);
 
     return (

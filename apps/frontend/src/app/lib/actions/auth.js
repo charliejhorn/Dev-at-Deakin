@@ -38,7 +38,24 @@ export async function loginAction(state, queryData) {
 
     // make request to DAL to get tokens & user object
     // success response is { accessToken, refreshToken, user }
-    const data = await loginDAL(email, password);
+    let data;
+
+    try {
+        data = await loginDAL(email, password);
+    } catch (err) {
+        const message =
+            err?.status === 401
+                ? err?.message || "Email or password is incorrect"
+                : err?.message || "Unable to log in right now";
+
+        return {
+            errors:
+                err?.status === 401
+                    ? { password: "Email or password is incorrect" }
+                    : { general: message },
+            message,
+        };
+    }
 
     // if user doesn't exist,
     if (!data?.user) {

@@ -8,7 +8,7 @@ export const validateSession = cache(async () => {
     const accessToken = cookieStore.get("accessToken");
 
     if (!accessToken) {
-        throw new Error("Access token is missing");
+        return null;
     }
 
     // api/users/me checks access token and returns the user object if valid
@@ -26,8 +26,11 @@ export const validateSession = cache(async () => {
 
     // if initial validation unsuccesful, attempt to refresh tokens
     if (!initialResponse.ok) {
+        console.log(
+            "[validateSesson] initial validation unsuccessful, attempting refresh"
+        );
         try {
-            refreshTokens();
+            await refreshTokens();
 
             const afterRefreshResponse = await makeMeRequest();
             if (!afterRefreshResponse.ok) {
@@ -38,8 +41,7 @@ export const validateSession = cache(async () => {
             return await afterRefreshResponse.json();
         } catch (e) {
             const error = new Error("Failed to validate session");
-            error.status = response.status;
-            error.info = await response.json().catch(() => ({}));
+            error.cause = e;
             throw error;
         }
     }

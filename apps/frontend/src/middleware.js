@@ -15,13 +15,17 @@ export default async function middleware(req) {
     const path = req.nextUrl.pathname;
     const isProtectedRoute = protectedRoutes.includes(path);
 
-    console.log("path: " + path + " | isProtectedRoute: " + isProtectedRoute);
+    // console.log("path: " + path + " | isProtectedRoute: " + isProtectedRoute);
 
     // redirect to /login if the user is not authenticated
     if (isProtectedRoute) {
         try {
             console.log("[middleware] attempting validateSession()");
             const sessionUser = await validateSession();
+            if (!sessionUser) {
+                console.log("[middleware] no active session");
+                return NextResponse.redirect(new URL("/login", req.nextUrl));
+            }
             if (path === "/checkout" && sessionUser?.email) {
                 const subscription = await getSubscription(sessionUser.email, {
                     cookieStore: req.cookies,

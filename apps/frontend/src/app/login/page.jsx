@@ -121,7 +121,7 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    {state?.message.includes("successful") && (
+                    {state?.message?.includes("successful") && (
                         <Link className="btn btn-primary" href="/">
                             Go to Home
                         </Link>
