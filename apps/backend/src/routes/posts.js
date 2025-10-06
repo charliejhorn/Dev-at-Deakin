@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { initFirebase } = require("../lib/firebase");
 const { httpError } = require("../lib/errors");
+const { uploadImageToImgbb } = require("../lib/imgbb");
 const { requireFields, allowOnly, isEnum } = require("../lib/validators");
 const auth = require("../middleware/auth");
 
@@ -44,19 +45,39 @@ router.post("/", auth(true), async (req, res, next) => {
             "title",
             "tags",
             "createdBy",
-            "image",
             "questionDescription",
             "questionDescriptionUseMarkdown",
             "questionCodeSnippet",
             "articleAbstract",
             "articleText",
             "status",
+            "imageBase64",
         ];
         const data = allowOnly(req.body || {}, allowed);
         const err = requireFields(data, ["postType", "title"]);
         if (err) return next(httpError(400, err));
         if (!isEnum(data.postType, POST_TYPES))
             return next(httpError(400, "invalid postType"));
+
+        const imageUpload =
+            data.imageUpload && typeof data.imageUpload === "object"
+                ? data.imageUpload
+                : null;
+        if (imageUpload) delete data.imageUpload;
+
+        if (imageUpload?.data) {
+            try {
+                const upload = await uploadImageToImgbb(imageUpload);
+                data.image = upload.url;
+                data.imageMeta = {
+                    source: "imgbb",
+                    displayUrl: upload.displayUrl,
+                    deleteUrl: upload.deleteUrl,
+                };
+            } catch (error) {
+                return next(error);
+            }
+        }
         const now = Date.now();
         data.createdAt = data.createdAt || now;
         data.updatedAt = now;
